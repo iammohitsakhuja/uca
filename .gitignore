@@ -10,3 +10,5 @@
 # Ignore all object files
 *.o
 
+.DS_Store
+
