@@ -14,7 +14,7 @@ void merge_sort(void *array, size_t nel, size_t width,
 {
     // Create an auxiliary array once, in order to save repetitive malloc
     // calls.
-    void *aux = (void *)malloc(nel * sizeof(void *) * width);
+    void *aux = (void *)malloc(nel * width);
 
     // Sort the array.
     msort(array, aux, 0, nel - 1, width, comparator);
