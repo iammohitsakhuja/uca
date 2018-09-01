@@ -10,8 +10,12 @@
 # Unignore all Makefiles.
 !Makefile
 
-# Ignore all object files
+# Ignore all object files and byte files.
 *.o
+*.class
+
+# Ignore temporary files.
+*.swp
 
 .DS_Store
 
