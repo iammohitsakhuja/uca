@@ -17,5 +17,8 @@
 # Ignore temporary files.
 *.swp
 
+# Ignore all PDFs (Markdowns are already included).
+*.pdf
+
 .DS_Store
 
