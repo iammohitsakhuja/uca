@@ -20,5 +20,10 @@
 # Ignore all PDFs (Markdowns are already included).
 *.pdf
 
+# Temporarily ignore the following.
+packages/
+hash_table/
+UnionFind/
+
 .DS_Store
 

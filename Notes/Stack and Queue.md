@@ -43,4 +43,3 @@ It is a FIFO data structure.
 - [ ] Implement stack using 2 queues
 - [ ] Sliding window sum
 - [x] Sliding window max
-
