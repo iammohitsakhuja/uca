@@ -1,4 +1,6 @@
-# Notes
+# Java Interfaces and MST
+
+08/09/2018
 
 ## Little Endian vs Big Endian
 
@@ -65,5 +67,3 @@ Hence, complexity = `O(N + N^2)` = `O(N^2)`.
 | Initialization | N | N |
 | Connected | 1 | NlogN |
 | Union | NlogN | NlogN |
-
-

@@ -9,6 +9,7 @@
 #define HEAP_HH
 
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -23,7 +24,7 @@ public:
     typedef typename vector<T>::const_reference const_reference;
     typedef typename vector<T>::size_type       size_type;
 
-    // protected:
+protected:
     vector<T>       container;  /* Actual data structure */
     comparator_type comparator; /* Comparator, either provided or default */
 
@@ -40,9 +41,6 @@ public:
     const_reference left_child(int32_t index) const noexcept(false);
     const_reference right_child(int32_t index) const noexcept(false);
     const_reference parent(int32_t index) const noexcept(false);
-
-    // TODO: Change swap to use `const_reference`.
-    void swap(int32_t first_index, int32_t second_index);
 
     // Bubble an element up or down until the `comparator` condition becomes
     // false.
@@ -68,6 +66,11 @@ public:
     // Push an element into the heap.
     void push(const value_type &__value);
     void push(value_type &&__value);
+
+    // Clear the previous elements, and batch insert the new elements into the
+    // heap.
+    void heapify(vector<T> &&__elements);
+    void heapify(const vector<T> &__elements);
 
     // Pop the topmost element from the heap.
     void pop(void);
@@ -101,12 +104,41 @@ inline void Heap<T, comparator_type>::push(value_type &&__value)
     this->bubble_up(this->size() - 1);
 }
 
+/* Heapify */
+template <class T, class comparator_type>
+inline void Heap<T, comparator_type>::heapify(const vector<T> &__elements)
+{
+    // Clear the previous elements in the container.
+    this->container.clear();
+
+    // Copy the new elements into the container.
+    this->container.assign(__elements.begin(), __elements.end());
+
+    // Bubble down the elements, starting from the last one.
+    for (int32_t i = this->container.size() - 1; i >= 0; i--)
+        this->bubble_down(i);
+}
+
+template <class T, class comparator_type>
+inline void Heap<T, comparator_type>::heapify(vector<T> &&__elements)
+{
+    // Clear the previous elements in the container.
+    this->container.clear();
+
+    // Copy the new elements into the container.
+    this->container.assign(__elements.begin(), __elements.end());
+
+    // Bubble down the elements, starting from the last one.
+    for (int32_t i = this->container.size() - 1; i >= 0; i--)
+        this->bubble_down(i);
+}
+
 /* Pop */
 template <class T, class comparator_type>
 inline void Heap<T, comparator_type>::pop(void)
 {
     if (!this->empty()) {
-        this->swap(0, this->size() - 1);
+        swap(this->container.front(), this->container.back());
         this->container.pop_back();
         this->bubble_down(0);
     }
@@ -142,14 +174,14 @@ inline bool Heap<T, comparator_type>::is_heap(void) const
     size_type size = this->size();
 
     for (size_type i = 0; i < size; i++) {
-        // If current node has a left child, and that child is `by default`
-        // strictly less than current node, then return false.
+        // If current node has a left child, and comparator condition holds for
+        // it w.r.t. current `i`, then return false.
         if (this->has_left_child(i)
             && this->comparator(this->container.at(i), this->left_child(i)))
             return false;
 
-        // If current node has a right child, and that child is `by default`
-        // strictly less than current node, then return false.
+        // If current node has a right child, and comparator condition holds
+        // for it w.r.t. current `i`, then return false.
         if (this->has_right_child(i)
             && this->comparator(this->container.at(i), this->right_child(i)))
             return false;
@@ -205,7 +237,7 @@ Heap<T, comparator_type>::left_child(int32_t index) const noexcept(false)
     if (!this->has_left_child(index))
         throw out_of_range("Left child does not exist");
 
-    return this->container[get_left_child_index(index)];
+    return this->container.at(get_left_child_index(index));
 }
 
 template <class T, class comparator_type>
@@ -215,7 +247,7 @@ Heap<T, comparator_type>::right_child(int32_t index) const noexcept(false)
     if (!this->has_right_child(index))
         throw out_of_range("Right child does not exist");
 
-    return this->container[get_right_child_index(index)];
+    return this->container.at(get_right_child_index(index));
 }
 
 template <class T, class comparator_type>
@@ -225,7 +257,7 @@ Heap<T, comparator_type>::parent(int32_t index) const noexcept(false)
     if (!this->has_parent(index))
         throw out_of_range("Parent does not exist");
 
-    return this->container[get_parent_index(index)];
+    return this->container.at(get_parent_index(index));
 }
 
 /* Bubble-up */
@@ -240,7 +272,7 @@ inline void Heap<T, comparator_type>::bubble_up(int32_t index)
         int parent_index = get_parent_index(index);
 
         // Swap the current element with its parent index.
-        this->swap(index, parent_index);
+        swap(this->container.at(index), this->container.at(parent_index));
         index = parent_index;
     }
 }
@@ -249,30 +281,30 @@ inline void Heap<T, comparator_type>::bubble_up(int32_t index)
 template <class T, class comparator_type>
 inline void Heap<T, comparator_type>::bubble_down(int32_t index)
 {
+    // Can only bubble-down while there is a left child.
     while (this->has_left_child(index)) {
+
+        // Get the element at which the element can be swapped with the element
+        // at the current index.
         int swappable_index = get_left_child_index(index);
+
+        // Swappable index will be the index of the right child if that is more
+        // suitable according to the comparator.
         if (this->has_right_child(index)
             && this->comparator(
                    this->left_child(index), this->right_child(index)))
             swappable_index = get_right_child_index(index);
 
+        // If comparator condition holds true for element at the swappable
+        // index, perform the swap, else break.
         if (this->comparator(this->container.at(index),
                 this->container.at(swappable_index))) {
-            this->swap(index, swappable_index);
+            swap(this->container.at(index),
+                this->container.at(swappable_index));
             index = swappable_index;
         } else
             break;
     }
-}
-
-/* Swap */
-template <class T, class comparator_type>
-inline void Heap<T, comparator_type>::swap(
-    int32_t first_index, int32_t second_index)
-{
-    T temp                        = this->container[first_index];
-    this->container[first_index]  = this->container[second_index];
-    this->container[second_index] = temp;
 }
 
 #endif
