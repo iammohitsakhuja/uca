@@ -1,23 +1,15 @@
 #include <cstdio>
 #include <functional>
-#include <queue>
 
 #include "Heap.hh"
 #include "benchmark.hh"
-
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
+#include "randomize_array.hh"
+#include "tests.hh"
 
 using namespace std;
 
-// Tests for the output sorted array.
-template <class T> void test(vector<T> &sorted_elements);
-template <class T, class Compare = less<typename vector<T>::value_type>>
-void test(vector<T> &sorted_elements, Compare &&__comparator);
-
-// Tests for heap.
-template <typename T, typename Compare = less<typename vector<T>::value_type>>
-void test_is_heap(Heap<T, Compare> &heap);
+void test_structures(void);
+void test_strings(void);
 
 int main(int argc, char **argv)
 {
@@ -158,6 +150,12 @@ int main(int argc, char **argv)
     time_popping_min_heap_batch_insert = calculate(&before, &after);
     printf("DONE\n\n");
 
+    // Tests on other datatypes.
+    printf("Testing other datatypes...\n");
+    test_strings();
+    test_structures();
+    printf("Tests for other datatypes passed!\n\n");
+
     // Final testing.
     printf("Performing some final tests...\n");
     test(max_heap_single_insert_elements);
@@ -210,21 +208,144 @@ int main(int argc, char **argv)
     return 0;
 }
 
-template <class T> void test(vector<T> &sorted_elements)
+void test_structures(void)
 {
-    less<int> __comparator;
-    for (unsigned int i = 1; i < sorted_elements.size(); i++)
-        assert(!__comparator(sorted_elements[i - 1], sorted_elements[i]));
+    // Structure definition.
+    struct TestStructure {
+        int num1;
+        int num2;
+
+        TestStructure(int num1, int num2)
+            : num1(num1)
+            , num2(num2)
+        {
+        }
+    };
+
+    // Comparator definitions.
+    struct ComparatorNum1 {
+        bool operator()(const TestStructure &a, const TestStructure &b)
+        {
+            return a.num1 < b.num1;
+        }
+    };
+
+    auto comparator_num2 = [](const TestStructure &a, const TestStructure &b) {
+        return a.num2 < b.num2;
+    };
+
+    // Setup.
+    const int      SIZE = 10;
+    TestStructure *array
+        = (TestStructure *)malloc(SIZE * sizeof(TestStructure));
+    for (int i = 0; i < SIZE; i++) {
+        array[i].num1 = i;
+        array[i].num2 = SIZE - i;
+    }
+
+    // Vectors for storing elements after they've been heapified.
+    vector<TestStructure> test_heapified_elements_num1;
+    vector<TestStructure> test_heapified_elements_num2;
+
+    // Randomize the actual array.
+    randomize_array(array, SIZE, sizeof(TestStructure));
+
+    // Create heaps and insert elements into them.
+    Heap<TestStructure, ComparatorNum1>            heap_num1;
+    Heap<TestStructure, decltype(comparator_num2)> heap_num2(comparator_num2);
+
+    for (int i = 0; i < SIZE; i++) {
+        heap_num1.push(array[i]);
+        heap_num2.push(array[i]);
+    }
+
+    // Get the elements back from the heaps.
+    while (!heap_num1.empty()) {
+        test_heapified_elements_num1.push_back(heap_num1.top());
+        heap_num1.pop();
+    }
+
+    while (!heap_num2.empty()) {
+        test_heapified_elements_num2.push_back(heap_num2.top());
+        heap_num2.pop();
+    }
+
+    // Test that the elements are sorted accordingly.
+    for (unsigned int i = 1; i < test_heapified_elements_num1.size(); i++)
+        assert(test_heapified_elements_num1[i - 1].num1
+            > test_heapified_elements_num1[i].num1);
+
+    for (unsigned int i = 1; i < test_heapified_elements_num2.size(); i++)
+        assert(test_heapified_elements_num2[i - 1].num2
+            > test_heapified_elements_num2[i].num2);
+
+    // Housekeeping.
+    free(array);
+
+    printf("Struct tests passed successfully!\n");
 }
 
-template <class T, class Compare>
-void test(vector<T> &sorted_elements, Compare &&__comparator)
+void test_strings(void)
 {
-    for (unsigned int i = 1; i < sorted_elements.size(); i++)
-        assert(!__comparator(sorted_elements[i - 1], sorted_elements[i]));
-}
+    // Setup.
+    const int  SIZE                  = 10;
+    const int  LENGTH                = 4;
+    const char strings[SIZE][LENGTH] = { "ABC", "DEF", "GHI", "JKL", "MNO",
+        "PQR", "STU", "VWX", "YZA", "BCD" };
+    char **    array                 = (char **)malloc(SIZE * sizeof(char *));
+    for (int i = 0; i < SIZE; i++) {
+        array[i] = (char *)malloc(LENGTH * sizeof(char));
+        strcpy(array[i], strings[i]);
+    }
 
-template <class T, class Compare> void test_is_heap(Heap<T, Compare> &heap)
-{
-    assert(heap.is_heap());
+    // Comparator definitions.
+    struct ComparatorAscending {
+        bool operator()(const char *a, const char *b)
+        {
+            return strcmp(a, b) < 0;
+        }
+    };
+
+    auto comparator_desc
+        = [](const char *a, const char *b) { return strcmp(a, b) > 0; };
+
+    // Vectors for storing elements after they've been heapified.
+    vector<char *> heap_desc_elements;
+    vector<char *> heap_asc_elements;
+
+    // Randomize the strings before sorting.
+    randomize_array(array, SIZE, sizeof(char *));
+
+    // Create heaps and insert elements into them.
+    Heap<char *, ComparatorAscending>       heap_desc;
+    Heap<char *, decltype(comparator_desc)> heap_asc(comparator_desc);
+    for (int i = 0; i < SIZE; i++) {
+        heap_desc.push(array[i]);
+        heap_asc.push(array[i]);
+    }
+
+    // Get the elements back from the heaps.
+    while (!heap_desc.empty()) {
+        heap_desc_elements.push_back(heap_desc.top());
+        heap_desc.pop();
+    }
+
+    while (!heap_asc.empty()) {
+        heap_asc_elements.push_back(heap_asc.top());
+        heap_asc.pop();
+    }
+
+    // Test that the elements are sorted accordingly.
+    for (unsigned int i = 1; i < heap_desc_elements.size(); i++)
+        assert(strcmp(heap_desc_elements[i - 1], heap_desc_elements[i]) >= 0);
+
+    for (unsigned int i = 1; i < heap_asc_elements.size(); i++)
+        assert(strcmp(heap_asc_elements[i - 1], heap_asc_elements[i]) <= 0);
+
+    // Housekeeping.
+    for (int i = 0; i < SIZE; i++)
+        free(array[i]);
+    free(array);
+
+    printf("String tests passed successfully!\n");
 }

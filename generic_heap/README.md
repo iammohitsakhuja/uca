@@ -4,7 +4,7 @@ A generic implementation of a Heap (i.e. Priority Queue) data structure.
 
 ## Usage
 
-The API expushposes the following operations:
+The API exposes the following operations:
 
 - Push (Pushes an element to the heap)
 - Pop (Removes the top-most element from the heap)
@@ -18,6 +18,40 @@ All the user needs to provide to the API is the `type` and the `comparator`.
 
 **Default behavior:** The default comparator used is `std::less` and it creates
 a Max Heap. This behavior can be overriden by providing a custom comparator.
+
+### Custom comparator
+
+There are a few ways how you can provide a custom comparator.
+
+- Create a class & pass the class as the template parameter.
+
+```cpp
+class Compare {
+    bool operator() (const Structure &a, const Structure &b) {
+        return a.some_property > b.some_property;
+    }
+};
+
+// Create the Heap like this.
+Heap<Structure, Compare> heap;
+```
+
+Also, note the use of the `const` keyword. It is necessary that your comparator
+does not modify anything.
+
+- Create a lambda function. Here, passing the comparator as a constructor
+    argument is necessary.
+
+```cpp
+auto comparator = [](const Structure &a, const Structure &b) {
+    return a.some_property > b.some_property;
+};
+
+// Create the Heap like this.
+Heap<Structure, decltype(comparator)> heap(comparator);
+```
+
+Here again, `const` keyword is necessary.
 
 ## Requirements
 
@@ -44,24 +78,29 @@ Popping elements (single insert) from Min Heap... DONE
 Popping elements (batch insert) from Max Heap... DONE
 Popping elements (batch insert) from Min Heap... DONE
 
+Testing other datatypes...
+String tests passed successfully!
+Struct tests passed successfully!
+Tests for other datatypes passed!
+
 Performing some final tests...
 All tests passed!
 
-TIME IN loading the Max Heap via single insertions:     1.09s
-TIME IN loading the Min Heap via single insertions:     1.07s
-TIME IN popping the Max Heap after single insertions:  17.11s
-TIME IN popping the Min Heap after single insertions:  16.88s
-TIME IN loading the Max Heap via batch insertion:       0.82s
-TIME IN loading the Min Heap via batch insertion:       0.82s
-TIME IN popping the Max Heap after batch insertion:    17.19s
-TIME IN popping the Min Heap after batch insertion:    17.16s
+TIME IN loading the Max Heap via single insertions:     1.14s
+TIME IN loading the Min Heap via single insertions:     1.12s
+TIME IN popping the Max Heap after single insertions:  17.40s
+TIME IN popping the Min Heap after single insertions:  16.94s
+TIME IN loading the Max Heap via batch insertion:       0.83s
+TIME IN loading the Min Heap via batch insertion:       0.84s
+TIME IN popping the Max Heap after batch insertion:    17.20s
+TIME IN popping the Min Heap after batch insertion:    17.00s
 
-TOTAL TIME IN single insertions method (Max Heap):     18.20s
-TOTAL TIME IN single insertions method (Min Heap):     17.96s
-TOTAL TIME IN batch insertion method (Max Heap):       18.01s
-TOTAL TIME IN batch insertion method (Min Heap):       17.98s
+TOTAL TIME IN single insertions method (Max Heap):     18.54s
+TOTAL TIME IN single insertions method (Min Heap):     18.06s
+TOTAL TIME IN batch insertion method (Max Heap):       18.03s
+TOTAL TIME IN batch insertion method (Min Heap):       17.84s
 
-TIME IN total:                                         72.15s
+TIME IN total:                                         72.48s
 ```
 
 **Disclaimer:** The time to operate on 10 million numbers that has been shown

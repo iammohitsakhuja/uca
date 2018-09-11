@@ -82,7 +82,6 @@ public:
 };
 
 /* Constructors */
-// TODO: To be tested.
 template <class T, class comparator_type>
 inline Heap<T, comparator_type>::Heap(const comparator_type &__comparator)
     : comparator(__comparator)
