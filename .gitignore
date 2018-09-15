@@ -22,8 +22,5 @@
 
 # Temporarily ignore the following.
 packages/
-hash_table/
-UnionFind/
-
 .DS_Store
 
