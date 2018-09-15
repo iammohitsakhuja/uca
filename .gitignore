@@ -21,6 +21,5 @@
 *.pdf
 
 # Temporarily ignore the following.
-packages/
 .DS_Store
 
