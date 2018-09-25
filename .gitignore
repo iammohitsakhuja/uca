@@ -20,6 +20,6 @@
 # Ignore all PDFs (Markdowns are already included).
 *.pdf
 
-# Temporarily ignore the following.
+# Miscellaneous.
 .DS_Store
 
