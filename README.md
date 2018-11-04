@@ -1,5 +1,8 @@
 # UCA Notes
 
+A collection of programs implemented as part of UCA curriculum, as well as some
+accompanying notes for the same.
+
 ## Stack and Queue
 
 ### Stacks

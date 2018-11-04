@@ -23,3 +23,7 @@
 # Miscellaneous.
 .DS_Store
 
+# Added by Intellij.
+/CollectionsAPI/nbproject/private/
+/CollectionsAPI/dist/
+/CollectionsAPI/build/
